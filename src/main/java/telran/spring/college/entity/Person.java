@@ -2,24 +2,31 @@ package telran.spring.college.entity;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import telran.spring.college.dto.PersonDto;
 
 @Entity
-@AllArgsConstructor
+
 @NoArgsConstructor
 @Data
-//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS) для разделения на две таблицы
-@Table(name = "students_lecturers")
+//@Inheritance(strategy =InheritanceType.TABLE_PER_CLASS)
+@Table(name = "students_lecturers") 
+									
 abstract public class Person {
 	@Id
 	long id;
 	
 	String name;
 	
-	@Column(name = "birth_date")
+	@Column(name = "birth_date") 
 	@Temporal(TemporalType.DATE)
 	LocalDate birthDate;
 	
@@ -27,6 +34,18 @@ abstract public class Person {
 	String city;
 	
 	@Column(nullable = true)
-	String phone;	
-	
+	String phone;
+
+	protected Person(PersonDto person) {
+		id = person.getId();
+		name = person.getName();
+		birthDate = LocalDate.parse(person.getBirthDateStr());
+		city = person.getCity();
+		phone = person.getPhone();
+	}
+
+	public PersonDto build() {
+		return new PersonDto(id, name, birthDate.toString(), city, phone);
+	}
+
 }
