@@ -1,5 +1,6 @@
 package telran.spring.college.service;
 
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +24,8 @@ public class CollegeServiceImpl implements CollegeService {
 	final SubjectRepository subjectRepo;
 	final LecturerRepository lecturerRepo;
 	final MarkRepository markRepo;
-
 	@Value("${app.person.id.min:100000}")
 	long minId;
-
 	@Value("${app.person.id.max:999999}")
 	long maxId;
 
@@ -36,9 +35,10 @@ public class CollegeServiceImpl implements CollegeService {
 		if (person.getId() == null) {
 			person.setId(getStudentUniqueId());
 		}
+
 		Student student = Student.of(person);
-		if(studentRepo.existsById(student.getId())) {
-			 throw new IllegalStateException("Student with given id already exists " + student.getId());
+		if (studentRepo.existsById(student.getId())) {
+			throw new IllegalStateException("Student with given id already exists" + student.getId());
 		}
 		PersonDto res = studentRepo.save(student).build();
 		log.debug("Student added {}", res);
@@ -64,8 +64,8 @@ public class CollegeServiceImpl implements CollegeService {
 			person.setId(getLecturerUniqueId());
 		}
 		Lecturer lecturer = Lecturer.of(person);
-		if(lecturerRepo.existsById(lecturer.getId())) {
-			 throw new IllegalStateException("Lecturer with given id already exists " + lecturer.getId());
+		if (lecturerRepo.existsById(lecturer.getId())) {
+			throw new IllegalStateException("Lecturer with given id already exists" + lecturer.getId());
 		}
 		PersonDto res = lecturerRepo.save(lecturer).build();
 		log.debug("Lecturer added {}", res);
@@ -73,6 +73,7 @@ public class CollegeServiceImpl implements CollegeService {
 	}
 
 	private Long getLecturerUniqueId() {
+
 		return getId(lecturerRepo);
 	}
 
@@ -80,18 +81,18 @@ public class CollegeServiceImpl implements CollegeService {
 	@Transactional(readOnly = false)
 	public SubjectDto addSubject(SubjectDto subject) {
 		if (subjectRepo.existsById(subject.getId())) {
-			throw new IllegalStateException("Subject with given id existd " + subject.getId());
+			throw new IllegalStateException("Subject with given id exists " + subject.getId());
 		}
 		Lecturer lecturer = null;
 		Long lecturerId = subject.getLecturerId();
 		if (lecturerId != null) {
 			lecturer = lecturerRepo.findById(lecturerId).orElseThrow(
-					() -> new NotFoundException(String.format("Lecturer with id %d doesn't exist", lecturerId)));
+					() -> new NotFoundException(String.format("Lecturer with id %d doen't exist", lecturerId)));
 		}
 		Subject subjectEntity = Subject.of(subject);
 		subjectEntity.setLecturer(lecturer);
 		SubjectDto res = subjectRepo.save(subjectEntity).build();
-		log.debug("Subject added {}", res);
+		log.debug("subject added {}", res);
 		return res;
 	}
 
@@ -100,16 +101,78 @@ public class CollegeServiceImpl implements CollegeService {
 	public MarkDto addMark(MarkDto mark) {
 		long studentId = mark.getStudentId();
 		Student student = studentRepo.findById(studentId).orElseThrow(
-				() -> new NotFoundException(String.format("Student with id %d doesn't exist in BD", studentId)));
-
+				() -> new NotFoundException(String.format("Student with id %d doesn't exist in DB", studentId)));
 		String subjectId = mark.getSubjectId();
 		Subject subject = subjectRepo.findById(subjectId).orElseThrow(
-				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in BD", subjectId)));
-
+				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in DB", subjectId)));
 		Mark markEntity = new Mark(student, subject, mark.getMark());
 		MarkDto res = markRepo.save(markEntity).build();
 		log.debug("Mark added {}", res);
 		return res;
+	}
+
+	@Override
+	public List<IdName> bestStudentsLecturer(long lecturerId, int nStudents) {
+
+		return studentRepo.findBestStudentsLecturer(lecturerId, nStudents);
+	}
+
+	@Override
+	public List<IdName> studentsAvgMarksGreaterCollegeAvg(int nMarksThreshold) {
+
+		return studentRepo.findStudentsAvgMarkGreaterCollege(nMarksThreshold);
+	}
+
+	@Override
+	public List<StudentMark> studentsAvgMarks() {
+
+		return studentRepo.findStudentsMarks();
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public SubjectDto updateHours(String subjectId, int hours) {
+		Subject subject = subjectRepo.findById(subjectId).orElseThrow(
+				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in BD", subjectId)));
+		subject.setHours(hours);
+
+		return subject.build();
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public SubjectDto updateLecturer(String subjectId, Long lecturerId) {
+		Subject subject = subjectRepo.findById(subjectId).orElseThrow(
+				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in BD", subjectId)));
+		Lecturer lecturer = null;
+
+		if (lecturerId != null) {
+			lecturer = lecturerRepo.findById(lecturerId).orElseThrow(
+					() -> new NotFoundException(String.format("Lecturer with id %d doesn't exist in BD", lecturerId)));
+		}
+		subject.setLecturer(lecturer);
+		return subject.build();
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public List<PersonDto> removeStudentsNoMarks() {
+		return removeStudentsLessMarks(1);
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public List<PersonDto> removeStudentsLessMarks(int nMarks) {
+		List<Student> studentsNoMark = studentRepo.findStudentsLessMark(nMarks);
+		studentsNoMark.forEach(s -> {
+			if (nMarks > 1) {
+				markRepo.findMarkByStuden(s.getId()).forEach(markRepo::delete);
+			}
+			log.debug("Student with id {} is going to be deleted", s.getId());
+			studentRepo.delete(s);
+
+		});
+		return studentsNoMark.stream().map(Student::build).toList();
 	}
 
 }
