@@ -15,8 +15,8 @@ import telran.spring.college.service.CollegeService;
 class CollegeServiceReadTests {
 	@Autowired
 CollegeService service;
-	@Test
 	
+	@Test
 	void bestStudentsLecturerTest() {
 		List<IdName> actual = service.bestStudentsLecturer(321, 2);
 		assertEquals(2, actual.size());
@@ -47,6 +47,19 @@ CollegeService service;
 		assertEquals("David", studentsMarks.get(4).getName());
 		assertEquals(0, studentsMarks.get(4).getMark());
 	}
+	@Test
+	void marksStudentSubjectTest() {
+		List<MarkDto> marks = service.marksStudentSubject(124, "S2");
+		
+		assertEquals(75, marks.get(0).getMark());
+	}
 	
+	@Test
+	void studentsMarsSubjectTest() {
+		List<IdName> students = service.studentsMarksSubject(SubjectType.BACK_END, 90);
+		assertEquals(2, students.size());		
+		assertEquals("Vasya", students.get(0).getName());
+		assertEquals("Rivka", students.get(1).getName());
+	}
 
 }

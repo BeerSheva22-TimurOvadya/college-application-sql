@@ -168,4 +168,15 @@ public class CollegeServiceImpl implements CollegeService {
 		return studentForRemoving.stream().map(Student::build).toList();
 	}
 
+	@Override
+	public List<MarkDto> marksStudentSubject(long studentId, String subjectId) {
+		List<Mark> marks = markRepo.findByStudentIdAndSubjectId(studentId, subjectId);
+		return marks.stream().map(Mark::build).toList();
+	}
+
+	@Override
+	public List<IdName> studentsMarksSubject(SubjectType type, int mark) {
+		return studentRepo.findDistinctByMarksSubjectTypeAndMarksMarkGreaterThanOrderById(type, mark);
+	}
+
 }
