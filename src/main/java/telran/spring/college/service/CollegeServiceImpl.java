@@ -1,5 +1,6 @@
 package telran.spring.college.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -162,12 +163,9 @@ public class CollegeServiceImpl implements CollegeService {
 	@Override
 	@Transactional(readOnly = false)
 	public List<PersonDto> removeStudentsLessMarks(int nMarks) {
-		List<Student> students = studentRepo.findStudentsLessMark(nMarks);
-		students.forEach(s -> {
-			log.debug("student with id {} is going to be deleted", s.getId());
-			studentRepo.delete(s);
-		});
-		return students.stream().map(Student::build).toList();
+		List<Student> studentForRemoving = studentRepo.findStudentsLessMarks(nMarks);
+		studentRepo.removeStudentsLessMark(nMarks);
+		return studentForRemoving.stream().map(Student::build).toList();
 	}
 
 }
