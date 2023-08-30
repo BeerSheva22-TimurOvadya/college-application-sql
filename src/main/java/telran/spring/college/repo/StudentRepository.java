@@ -36,7 +36,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 			+ " id  in (select sl.id from students_lecturers sl left join marks on sl.id=student_id group by sl.id "
 			+ "having count(mark) < :nMarks)", nativeQuery = true)	
 	void removeStudentsLessMark(int nMarks);
-	
+		
 	@Query(value = "select *  from students_lecturers where dtype = 'Student' and"
 			+ " id  in (select sl.id from students_lecturers sl left join marks on sl.id=student_id group by sl.id "
 			+ "having count(mark) < :nMarks)", nativeQuery = true)	
