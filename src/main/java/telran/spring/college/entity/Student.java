@@ -15,7 +15,6 @@ public class Student extends Person {
 
 	private Student(PersonDto person) {
 		super(person);
-
 	}
 
 	public static Student of(PersonDto person) {
