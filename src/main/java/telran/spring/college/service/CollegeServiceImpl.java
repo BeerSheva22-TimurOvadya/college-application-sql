@@ -133,7 +133,7 @@ public class CollegeServiceImpl implements CollegeService {
 	@Transactional(readOnly = false)
 	public SubjectDto updateHours(String subjectId, int hours) {
 		Subject subject = subjectRepo.findById(subjectId).orElseThrow(
-				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in BD", subjectId)));
+				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in DB", subjectId)));
 		subject.setHours(hours);
 
 		return subject.build();
@@ -143,12 +143,11 @@ public class CollegeServiceImpl implements CollegeService {
 	@Transactional(readOnly = false)
 	public SubjectDto updateLecturer(String subjectId, Long lecturerId) {
 		Subject subject = subjectRepo.findById(subjectId).orElseThrow(
-				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in BD", subjectId)));
+				() -> new NotFoundException(String.format("Subject with id %s doesn't exist in DB", subjectId)));
 		Lecturer lecturer = null;
-
 		if (lecturerId != null) {
 			lecturer = lecturerRepo.findById(lecturerId).orElseThrow(
-					() -> new NotFoundException(String.format("Lecturer with id %d doesn't exist in BD", lecturerId)));
+					() -> new NotFoundException(String.format("Lecturer with id %d doesn't exist in DB", lecturerId)));
 		}
 		subject.setLecturer(lecturer);
 		return subject.build();
@@ -163,16 +162,16 @@ public class CollegeServiceImpl implements CollegeService {
 	@Override
 	@Transactional(readOnly = false)
 	public List<PersonDto> removeStudentsLessMarks(int nMarks) {
-		List<Student> studentsNoMark = studentRepo.findStudentsLessMark(nMarks);
-		studentsNoMark.forEach(s -> {
-			if (nMarks > 1) {
-				markRepo.findMarkByStuden(s.getId()).forEach(markRepo::delete);
-			}
-			log.debug("Student with id {} is going to be deleted", s.getId());
+		List<Student> students = studentRepo.findStudentsLessMark(nMarks);
+
+		students.forEach(s -> {
+
+			log.debug("student with id {} is going to be deleted", s.getId());
 			studentRepo.delete(s);
 
 		});
-		return studentsNoMark.stream().map(Student::build).toList();
+
+		return students.stream().map(Student::build).toList();
 	}
 
 }

@@ -12,32 +12,30 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import telran.spring.college.dto.*;
+import telran.spring.college.dto.MarkDto;
+import telran.spring.college.dto.PersonDto;
+import telran.spring.college.dto.SubjectDto;
+import telran.spring.college.dto.SubjectType;
+import telran.spring.college.entity.Lecturer;
+import telran.spring.college.entity.Student;
+import telran.spring.college.repo.*;
 import telran.spring.college.service.CollegeService;
 import telran.spring.exceptions.NotFoundException;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CollegeServiceCreateTests {
-	
 	private static final long ID_LECTURER = 123;
 	private static final long ID_STUDENT = 124;
-	
 	@Autowired
 	CollegeService service;
-	
 	PersonDto lecturerDto = new PersonDto(ID_LECTURER, "Vasya", LocalDate.now().toString(), null, null);
 	PersonDto lecturerDto1 = new PersonDto(null, "Sara", "2000-01-01", null, null);
-	
 	PersonDto studentDto = new PersonDto(ID_STUDENT, "Petya", LocalDate.now().toString(), null, null);
 	PersonDto studentDto1 = new PersonDto(null, "Yosef", "2000-01-01", null, null);
-	
 	SubjectDto subjectDto = new SubjectDto("S1", "Java", 100, null, SubjectType.BACK_END);
-	
 	SubjectDto sujectDto1 = new SubjectDto("S2", "Java", 100, ID_LECTURER, SubjectType.BACK_END);
-	
 	SubjectDto sujectDto2 = new SubjectDto("S3", "Java", 100, ID_LECTURER + 10, SubjectType.BACK_END);
-	
 	SubjectDto subjectDto3 = new SubjectDto("S1", "Java", 100, null, SubjectType.BACK_END);
 
 	@Test
